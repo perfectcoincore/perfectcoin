@@ -1,0 +1,92 @@
+#!/sbin/runscript
+
+# backward compatibility for existing gentoo layout 
+#
+if [ -d "/var/lib/pigeon/.pigeon" ]; then
+	PERFECTCOIND_DEFAULT_DATADIR="/var/lib/pigeon/.pigeon"
+else
+	PERFECTCOIND_DEFAULT_DATADIR="/var/lib/pigeond"
+fi
+
+PERFECTCOIND_CONFIGFILE=${PERFECTCOIND_CONFIGFILE:-/etc/pigeon/pigeon.conf}
+PERFECTCOIND_PIDDIR=${PERFECTCOIND_PIDDIR:-/var/run/pigeond}
+PERFECTCOIND_PIDFILE=${PERFECTCOIND_PIDFILE:-${PERFECTCOIND_PIDDIR}/pigeond.pid}
+PERFECTCOIND_DATADIR=${PERFECTCOIND_DATADIR:-${PERFECTCOIND_DEFAULT_DATADIR}}
+PERFECTCOIND_USER=${PERFECTCOIND_USER:-${PERFECTCOIN_USER:-pigeon}}
+PERFECTCOIND_GROUP=${PERFECTCOIND_GROUP:-pigeon}
+PERFECTCOIND_BIN=${PERFECTCOIND_BIN:-/usr/bin/pigeond}
+PERFECTCOIND_NICE=${PERFECTCOIND_NICE:-${NICELEVEL:-0}}
+PERFECTCOIND_OPTS="${PERFECTCOIND_OPTS:-${PERFECTCOIN_OPTS}}"
+
+name="Pigeon Core Daemon"
+description="Pigeon cryptocurrency P2P network daemon"
+
+command="/usr/bin/pigeond"
+command_args="-pid=\"${PERFECTCOIND_PIDFILE}\" \
+		-conf=\"${PERFECTCOIND_CONFIGFILE}\" \
+		-datadir=\"${PERFECTCOIND_DATADIR}\" \
+		-daemon \
+		${PERFECTCOIND_OPTS}"
+
+required_files="${PERFECTCOIND_CONFIGFILE}"
+start_stop_daemon_args="-u ${PERFECTCOIND_USER} \
+			-N ${PERFECTCOIND_NICE} -w 2000"
+pidfile="${PERFECTCOIND_PIDFILE}"
+
+# The retry schedule to use when stopping the daemon. Could be either
+# a timeout in seconds or multiple signal/timeout pairs (like
+# "SIGKILL/180 SIGTERM/300")
+retry="${PERFECTCOIND_SIGTERM_TIMEOUT}"
+
+depend() {
+	need localmount net
+}
+
+# verify
+# 1) that the datadir exists and is writable (or create it)
+# 2) that a directory for the pid exists and is writable
+# 3) ownership and permissions on the config file
+start_pre() {
+	checkpath \
+	-d \
+	--mode 0750 \
+	--owner "${PERFECTCOIND_USER}:${PERFECTCOIND_GROUP}" \
+	"${PERFECTCOIND_DATADIR}"
+
+	checkpath \
+	-d \
+	--mode 0755 \
+	--owner "${PERFECTCOIND_USER}:${PERFECTCOIND_GROUP}" \
+	"${PERFECTCOIND_PIDDIR}"
+
+	checkpath -f \
+	-o ${PERFECTCOIND_USER}:${PERFECTCOIND_GROUP} \
+	-m 0660 \
+	${PERFECTCOIND_CONFIGFILE}
+
+	checkconfig || return 1
+}
+
+checkconfig()
+{
+	if ! grep -qs '^rpcpassword=' "${PERFECTCOIND_CONFIGFILE}" ; then
+		eerror ""
+		eerror "ERROR: You must set a secure rpcpassword to run pigeond."
+		eerror "The setting must appear in ${PERFECTCOIND_CONFIGFILE}"
+		eerror ""
+		eerror "This password is security critical to securing wallets "
+		eerror "and must not be the same as the rpcuser setting."
+		eerror "You can generate a suitable random password using the following "
+		eerror "command from the shell:"
+		eerror ""
+		eerror "bash -c 'tr -dc a-zA-Z0-9 < /dev/urandom | head -c32 && echo'"
+		eerror ""
+		eerror "It is recommended that you also set alertnotify so you are "
+		eerror "notified of problems:"
+		eerror ""
+		eerror "ie: alertnotify=echo %%s | mail -s \"Pigeon Alert\"" \
+			"admin@foo.com"
+		eerror ""
+		return 1
+	fi
+}

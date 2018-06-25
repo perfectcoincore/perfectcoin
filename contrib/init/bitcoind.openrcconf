@@ -1,0 +1,33 @@
+# /etc/conf.d/pigeond: config file for /etc/init.d/pigeond
+
+# Config file location
+#PERFECTCOIND_CONFIGFILE="/etc/pigeon/pigeon.conf"
+
+# What directory to write pidfile to?  (created and owned by $PERFECTCOIND_USER)
+#PERFECTCOIND_PIDDIR="/var/run/pigeond"
+
+# What filename to give the pidfile
+#PERFECTCOIND_PIDFILE="${PERFECTCOIND_PIDDIR}/pigeond.pid"
+
+# Where to write pigeond data (be mindful that the blockchain is large)
+#PERFECTCOIND_DATADIR="/var/lib/pigeond"
+
+# User and group to own pigeond process
+#PERFECTCOIND_USER="pigeon"
+#PERFECTCOIND_GROUP="pigeon"
+
+# Path to pigeond executable
+#PERFECTCOIND_BIN="/usr/bin/pigeond"
+
+# Nice value to run pigeond under
+#PERFECTCOIND_NICE=0
+
+# Additional options (avoid -conf and -datadir, use flags above)
+#PERFECTCOIND_OPTS=""
+
+# The timeout in seconds OpenRC will wait for pigeond to terminate
+# after a SIGTERM has been raised.
+# Note that this will be mapped as argument to start-stop-daemon's
+# '--retry' option, which means you can specify a retry schedule
+# here. For more information see man 8 start-stop-daemon.
+PERFECTCOIND_SIGTERM_TIMEOUT=60

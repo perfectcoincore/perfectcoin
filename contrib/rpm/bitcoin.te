@@ -1,0 +1,81 @@
+policy_module(pigeon, 1.100.1)
+
+########################################
+#
+# Declarations
+#
+
+type perfectcoin_t;
+type perfectcoin_exec_t;
+init_daemon_domain(perfectcoin_t, perfectcoin_exec_t)
+
+permissive perfectcoin_t;
+
+type perfectcoin_initrc_exec_t;
+init_script_file(perfectcoin_initrc_exec_t)
+
+type perfectcoin_conf_t;
+files_type(perfectcoin_conf_t)
+
+type perfectcoin_var_lib_t;
+files_type(perfectcoin_var_lib_t)
+
+type perfectcoin_var_run_t;
+files_type(perfectcoin_var_run_t)
+
+type perfectcoin_port_t;
+corenet_port(perfectcoin_port_t)
+
+########################################
+#
+# pigeon local policy
+#
+allow perfectcoin_t self:process { fork };
+
+allow perfectcoin_t self:fifo_file rw_fifo_file_perms;
+allow perfectcoin_t self:unix_stream_socket create_stream_socket_perms;
+
+manage_dirs_pattern(perfectcoin_t, perfectcoin_conf_t, perfectcoin_conf_t)
+manage_files_pattern(perfectcoin_t, perfectcoin_conf_t, perfectcoin_conf_t)
+
+manage_dirs_pattern(perfectcoin_t, perfectcoin_var_lib_t, perfectcoin_var_lib_t)
+manage_files_pattern(perfectcoin_t, perfectcoin_var_lib_t, perfectcoin_var_lib_t)
+files_var_lib_filetrans(perfectcoin_t, perfectcoin_var_lib_t, { dir file })
+
+manage_dirs_pattern(perfectcoin_t, perfectcoin_var_run_t, perfectcoin_var_run_t)
+manage_files_pattern(perfectcoin_t, perfectcoin_var_run_t, perfectcoin_var_run_t)
+
+sysnet_dns_name_resolve(perfectcoin_t)
+corenet_all_recvfrom_unlabeled(perfectcoin_t)
+
+allow perfectcoin_t self:tcp_socket create_stream_socket_perms;
+corenet_tcp_sendrecv_generic_if(perfectcoin_t)
+corenet_tcp_sendrecv_generic_node(perfectcoin_t)
+corenet_tcp_sendrecv_all_ports(perfectcoin_t)
+corenet_tcp_bind_generic_node(perfectcoin_t)
+
+gen_require(`
+    type perfectcoin_port_t;
+')
+allow perfectcoin_t perfectcoin_port_t:tcp_socket name_bind;
+
+gen_require(`
+    type perfectcoin_port_t;
+')
+allow perfectcoin_t perfectcoin_port_t:tcp_socket name_connect;
+
+domain_use_interactive_fds(perfectcoin_t)
+
+files_read_etc_files(perfectcoin_t)
+
+miscfiles_read_localization(perfectcoin_t)
+
+sysnet_dns_name_resolve(perfectcoin_t)
+
+allow perfectcoin_t perfectcoin_exec_t:file execute_no_trans;
+allow perfectcoin_t self:process setsched;
+corecmd_exec_ls(perfectcoin_t)
+corenet_tcp_connect_http_port(perfectcoin_t)
+dev_read_urand(perfectcoin_t)
+fs_getattr_xattr_fs(perfectcoin_t)
+kernel_read_system_state(perfectcoin_t)
