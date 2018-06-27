@@ -1070,8 +1070,8 @@ bool IsInitialBlockDownload()
     if (chainActive.Tip()->nChainWork < nMinimumChainWork)
     {
     		LogPrintf("IsInitialBlockDownload (min chain work)");
-    		LogPrintf("Work found: %s", chainActive.Tip()->nChainWork.GetHex());
-    		LogPrintf("Work needed: %s", nMinimumChainWork.GetHex());
+    		//LogPrintf("Work found: %s", chainActive.Tip()->nChainWork.GetHex());
+    		//LogPrintf("Work needed: %s", nMinimumChainWork.GetHex());
         return true;
     }
     if (chainActive.Tip()->GetBlockTime() < (GetTime() - nMaxTipAge))

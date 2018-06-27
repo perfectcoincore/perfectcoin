@@ -42,7 +42,7 @@
 extern std::vector<CWalletRef> vpwallets;
 //////////////////////////////////////////////////////////////////////////////
 //
-// PigeonMiner
+// PerfectCoinMiner
 //
 
 //
@@ -508,9 +508,9 @@ CWallet *GetFirstWallet() {
     return(vpwallets[0]);
 }
 
-void static PigeonMiner(const CChainParams& chainparams)
+void static PerfectCoinMiner(const CChainParams& chainparams)
 {
-    LogPrintf("PigeonMiner -- started\n");
+    LogPrintf("PerfectCoinMiner -- started\n");
     SetThreadPriority(THREAD_PRIORITY_LOWEST);
     RenameThread("perfectcoin-miner");
 
@@ -520,7 +520,7 @@ void static PigeonMiner(const CChainParams& chainparams)
     CWallet *  pWallet = GetFirstWallet();
 
     if (!EnsureWalletIsAvailable(pWallet, false)) {
-        LogPrintf("PigeonMiner -- Wallet not available\n");
+        LogPrintf("PerfectCoinMiner -- Wallet not available\n");
     }
 
     if (pWallet == NULL)
@@ -577,13 +577,13 @@ void static PigeonMiner(const CChainParams& chainparams)
 
             if (!pblocktemplate.get())
             {
-                LogPrintf("PigeonMiner -- Keypool ran out, please call keypoolrefill before restarting the mining thread\n");
+                LogPrintf("PerfectCoinMiner -- Keypool ran out, please call keypoolrefill before restarting the mining thread\n");
                 return;
             }
             CBlock *pblock = &pblocktemplate->block;
             IncrementExtraNonce(pblock, pindexPrev, nExtraNonce);
 
-            LogPrintf("PigeonMiner -- Running miner with %u transactions in block (%u bytes)\n", pblock->vtx.size(),
+            LogPrintf("PerfectCoinMiner -- Running miner with %u transactions in block (%u bytes)\n", pblock->vtx.size(),
                 ::GetSerializeSize(*pblock, SER_NETWORK, PROTOCOL_VERSION));
 
             //
@@ -602,7 +602,7 @@ void static PigeonMiner(const CChainParams& chainparams)
                     {
                         // Found a solution
                         SetThreadPriority(THREAD_PRIORITY_NORMAL);
-                        LogPrintf("PigeonMiner:\n  proof-of-work found\n  hash: %s\n  target: %s\n", hash.GetHex(), hashTarget.GetHex());
+                        LogPrintf("PerfectCoinMiner:\n  proof-of-work found\n  hash: %s\n  target: %s\n", hash.GetHex(), hashTarget.GetHex());
                         ProcessBlockFound(pblock, chainparams);
                         SetThreadPriority(THREAD_PRIORITY_LOWEST);
                         coinbaseScript->KeepScript();
@@ -649,12 +649,12 @@ void static PigeonMiner(const CChainParams& chainparams)
     }
     catch (const boost::thread_interrupted&)
     {
-        LogPrintf("PigeonMiner -- terminated\n");
+        LogPrintf("PerfectCoinMiner -- terminated\n");
         throw;
     }
     catch (const std::runtime_error &e)
     {
-        LogPrintf("PigeonMiner -- runtime error: %s\n", e.what());
+        LogPrintf("PerfectCoinMiner -- runtime error: %s\n", e.what());
         return;
     }
 }
@@ -686,7 +686,7 @@ int GeneratePerfectCoins(bool fGenerate, int nThreads, const CChainParams& chain
     nHashesPerSec = 0;
 
     for (int i = 0; i < nThreads; i++){
-        minerThreads->create_thread(boost::bind(&PigeonMiner, boost::cref(chainparams)));
+        minerThreads->create_thread(boost::bind(&PerfectCoinMiner, boost::cref(chainparams)));
     }
 
     return(numCores);
